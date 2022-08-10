@@ -7,3 +7,4 @@ spring:
     name: gulimall-third-party
 server:
   port: 8005
+

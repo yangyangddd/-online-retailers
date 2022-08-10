@@ -2,17 +2,19 @@ package com.yang.gulimall.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yang.common.utils.PageUtils;
 import com.yang.common.utils.Query;
 import com.yang.gulimall.product.dao.CategoryDao;
 import com.yang.gulimall.product.entity.CategoryEntity;
+import com.yang.gulimall.product.service.CategoryBrandRelationService;
 import com.yang.gulimall.product.service.CategoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
 //    @Resource
 //    CategoryDao categoryDao;//已经在父类注入过了
+    @Autowired
+    CategoryBrandRelationService categoryBrandRelationService;
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<CategoryEntity> page = this.page(
@@ -50,6 +54,47 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         //TODO  1检查当前删除的菜单，是否被其他地方引用
         //逻辑删除
         baseMapper.deleteBatchIds(asList);
+    }
+
+    /**
+     *
+     * @param catelogId 传入的菜单id值
+     * @return 返回其完整路径，即其父节点，父节点的父节点，和当前节点组成的long数组
+     */
+    @Override
+    public Long[] findCatelogPath(Long catelogId) {
+        List<Long> catelogPath1 = findCatelogPath1(catelogId);
+        Collections.reverse(catelogPath1);
+        Long[] longs = catelogPath1.toArray(new Long[0]);
+        return longs;
+    }
+
+    //级联更新所有关联的数据
+    @Override
+    @Transactional
+    public void updateCascade(CategoryEntity category) {
+        this.updateById(category);
+        if(StringUtils.isNotEmpty(category.getName()))
+        {
+            categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
+        }
+
+    }
+
+    public List<Long> findCatelogPath1(Long catelogId)
+    {
+        List<Long> list=new ArrayList<>();
+        list.add(catelogId);
+        QueryWrapper<CategoryEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("cat_id", catelogId);
+        CategoryEntity entity = baseMapper.selectOne(wrapper);
+        if(entity!=null)
+        {
+            Long parentCid = entity.getParentCid();
+            if(parentCid!=0)
+            list.addAll(findCatelogPath1(parentCid));
+        }
+        return list;
     }
 
     /**
