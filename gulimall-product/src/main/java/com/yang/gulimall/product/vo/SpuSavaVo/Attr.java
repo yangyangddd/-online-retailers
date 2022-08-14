@@ -15,7 +15,7 @@ import lombok.Data;
 @Data
 public class Attr {
 
-    private int attrId;
+    private Long attrId;
     private String attrName;
     private String attrValue;
 

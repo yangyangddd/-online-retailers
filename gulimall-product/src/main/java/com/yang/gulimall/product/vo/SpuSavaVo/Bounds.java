@@ -6,6 +6,8 @@ package com.yang.gulimall.product.vo.SpuSavaVo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * Auto-generated: 2022-08-10 22:23:26
  *
@@ -15,7 +17,7 @@ import lombok.Data;
 @Data
 public class Bounds {
 
-    private int buyBounds;
-    private int growBounds;
+    private BigDecimal buyBounds;
+    private BigDecimal growBounds;
 
 }

@@ -3,8 +3,11 @@ package com.yang.gulimall.product.vo.SpuSavaVo;
 /**
  * Copyright 2022 json.cn
  */
+
+import com.yang.to.MemberPrice;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -18,16 +21,16 @@ public class Skus {
 
     private List<Attr> attr;
     private String skuName;
-    private int price;
+    private BigDecimal price;
     private String skuTitle;
     private String skuSubtitle;
     private List<Images> images;
     private List<String> descar;
     private int fullCount;
-    private int discount;
+    private BigDecimal discount;
     private int countStatus;
-    private int fullPrice;
-    private int reducePrice;
+    private BigDecimal fullPrice;
+    private BigDecimal reducePrice;
     private int priceStatus;
     private List<MemberPrice> memberPrice;
 

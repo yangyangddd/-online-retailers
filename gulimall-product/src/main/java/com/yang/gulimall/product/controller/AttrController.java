@@ -2,13 +2,16 @@ package com.yang.gulimall.product.controller;
 
 import com.yang.common.utils.PageUtils;
 import com.yang.common.utils.R;
+import com.yang.gulimall.product.entity.ProductAttrValueEntity;
 import com.yang.gulimall.product.service.AttrService;
+import com.yang.gulimall.product.service.ProductAttrValueService;
 import com.yang.gulimall.product.vo.AttrRespVo;
 import com.yang.gulimall.product.vo.attrVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 
@@ -25,6 +28,8 @@ import java.util.Map;
 public class AttrController {
     @Autowired
     private AttrService attrService;
+    @Autowired
+    private ProductAttrValueService productAttrValueService;
 
     /**
      * 列表
@@ -46,8 +51,18 @@ public class AttrController {
         PageUtils page = attrService.queryTypePage(params,catelogId,type);
         return R.ok().put("page", page);
     }
-
-
+///product/attr/base/listforspu/{spuId}
+@GetMapping("/base/listforspu/{spuId}")
+public R listForSpu(@PathVariable("spuId") Long spuId){
+        List<ProductAttrValueEntity> entities=productAttrValueService.baseAttrListForSpu(spuId);
+    return R.ok().put("data", entities);
+}
+///product/attr/update/{spuId}
+@PostMapping("/update/{spuId}")
+public R updateForSpu(@RequestBody List<ProductAttrValueEntity> entities, @PathVariable("spuId") Long spuId){
+    productAttrValueService.baseAttrUpdateForSpu(spuId,entities);
+    return R.ok();
+}
     /**
      * 信息
      */

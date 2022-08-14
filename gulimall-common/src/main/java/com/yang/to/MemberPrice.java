@@ -1,10 +1,12 @@
-package com.yang.gulimall.product.vo.SpuSavaVo;
+package com.yang.to;
 
 /**
  * Copyright 2022 json.cn
  */
 
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 /**
  * Auto-generated: 2022-08-10 22:23:26
@@ -15,7 +17,7 @@ import lombok.Data;
 @Data
 public class MemberPrice {
 
-    private int id;
+    private Long id;
     private String name;
-    private int price;
+    private BigDecimal price;
 }

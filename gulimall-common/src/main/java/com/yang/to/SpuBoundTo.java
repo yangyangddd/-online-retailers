@@ -1,0 +1,14 @@
+package com.yang.to;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+@Data
+public class SpuBoundTo {
+    private Long skuId;
+    private Long spuId;
+    private BigDecimal buyBounds;
+    private BigDecimal growBounds;
+
+}

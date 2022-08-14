@@ -1,19 +1,16 @@
 package com.yang.gulimall.product.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.yang.gulimall.product.entity.SkuInfoEntity;
-import com.yang.gulimall.product.service.SkuInfoService;
 import com.yang.common.utils.PageUtils;
 import com.yang.common.utils.R;
+import com.yang.gulimall.product.entity.SkuInfoEntity;
+import com.yang.gulimall.product.service.SkuInfoService;
+import com.yang.to.SkuInfoEntityTo;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Map;
 
 
 
@@ -47,8 +44,9 @@ public class SkuInfoController {
     @RequestMapping("/info/{skuId}")
     public R info(@PathVariable("skuId") Long skuId){
 		SkuInfoEntity skuInfo = skuInfoService.getById(skuId);
-
-        return R.ok().put("skuInfo", skuInfo);
+        SkuInfoEntityTo skuInfoEntityTo = new SkuInfoEntityTo();
+        BeanUtils.copyProperties(skuInfo,skuInfoEntityTo);
+        return R.ok().put("skuInfo", skuInfoEntityTo);
     }
 
     /**
