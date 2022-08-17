@@ -8,6 +8,8 @@
 
 package com.yang.common.utils;
 
+import cn.hutool.core.lang.TypeReference;
+import cn.hutool.json.JSONUtil;
 import org.apache.http.HttpStatus;
 
 import java.util.HashMap;
@@ -20,7 +22,20 @@ import java.util.Map;
  */
 public class R extends HashMap<String, Object> {
 	private static final long serialVersionUID = 1L;
-	
+
+	public<T> T getData(TypeReference<T> tTypeReference)
+	{
+		Object data=get("data");
+		String s = JSONUtil.toJsonStr(data);
+		T t = JSONUtil.toBean(s, tTypeReference, false);
+		return t;
+
+	}
+	public R setData(Object data)
+	{
+		put("data",data);
+		return this;
+	}
 	public R() {
 		put("code", 0);
 		put("msg", "success");

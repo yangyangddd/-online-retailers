@@ -6,6 +6,7 @@ import com.yang.gulimall.product.entity.AttrEntity;
 import com.yang.gulimall.product.vo.AttrRespVo;
 import com.yang.gulimall.product.vo.attrVo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,5 +28,8 @@ public interface AttrService extends IService<AttrEntity> {
     void updateAttr(attrVo attr);
 
     PageUtils queryTypePage(Map<String, Object> params, Long catelogId, String type);
+
+    List<Long> selectSearchAttrs(List<Long> attrs);
+
 }
 

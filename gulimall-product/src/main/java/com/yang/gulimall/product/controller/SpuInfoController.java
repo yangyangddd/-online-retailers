@@ -26,9 +26,14 @@ public class SpuInfoController {
     @Autowired
     private SpuInfoService spuInfoService;
 
-    /**
-     * 列表
-     */
+    @PostMapping("/{spuId}/up")
+    public R spuUp(@PathVariable("spuId") Long spuId) {
+        spuInfoService.up(spuId);
+        return R.ok();
+    }
+        /**
+         * 列表
+         */
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params){
         PageUtils page = spuInfoService.queryPageByCondition(params);

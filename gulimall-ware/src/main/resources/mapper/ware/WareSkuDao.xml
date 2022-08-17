@@ -12,6 +12,13 @@
         <result property="skuName" column="sku_name"/>
         <result property="stockLocked" column="stock_locked"/>
     </resultMap>
+    <select id="selectSumStock" resultType="com.yang.gulimall.ware.vo.HasStock2Vo">
+        SELECT  sku_id,SUM(stock-stock_locked) as hasStock FROM `wms_ware_sku` WHERE sku_id IN(
+            <foreach collection="skuIds" item="id" separator=",">
+                #{id}
+            </foreach>
+            ) GROUP BY sku_id
+    </select>
 
 
 </mapper>

@@ -1,7 +1,7 @@
 package com.yang.gulimall.product.exception;
 
 import com.yang.common.utils.R;
-import com.yang.exception.bizCodeEnum;
+import com.yang.exception.BizCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -28,12 +28,12 @@ public class gulimallExceptionControllerAdvice {
         bindingResult.getFieldErrors().forEach(((fieldError) -> {
             errorMap.put(fieldError.getField(),fieldError.getDefaultMessage());
         }));
-        return R.error(bizCodeEnum.VALID_EXCEPTION.getCode(),bizCodeEnum.VALID_EXCEPTION.getMsg()).put("data",errorMap);
+        return R.error(BizCodeEnum.VALID_EXCEPTION.getCode(), BizCodeEnum.VALID_EXCEPTION.getMsg()).put("data",errorMap);
     }
 //    @ExceptionHandler(value = Exception.class )
 //    public R handleException(Throwable throwable)
 //    {
 //        log.error(throwable.getMessage());
-//        return R.error(bizCodeEnum.UNKNOWN_EXCEPTION.getCode(), bizCodeEnum.UNKNOWN_EXCEPTION.getMsg());
+//        return R.error(BizCodeEnum.UNKNOWN_EXCEPTION.getCode(), BizCodeEnum.UNKNOWN_EXCEPTION.getMsg());
 //    }
 }

@@ -1,21 +1,27 @@
 package com.yang.gulimall.product.service.impl;
 
+import cn.hutool.core.lang.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yang.common.utils.PageUtils;
 import com.yang.common.utils.Query;
 import com.yang.common.utils.R;
+import com.yang.constant.ProductConstant;
 import com.yang.gulimall.product.dao.SpuInfoDao;
 import com.yang.gulimall.product.dao.SpuInfoDescDao;
 import com.yang.gulimall.product.entity.*;
 import com.yang.gulimall.product.feign.CouponFeignService;
+import com.yang.gulimall.product.feign.SearchFeignService;
+import com.yang.gulimall.product.feign.WareFeignService;
 import com.yang.gulimall.product.service.*;
 import com.yang.gulimall.product.vo.SpuInfoVo;
 import com.yang.gulimall.product.vo.SpuSavaVo.*;
+import com.yang.to.HasStockTo;
 import com.yang.to.MemberPrice;
 import com.yang.to.SkuReductionTo;
 import com.yang.to.SpuBoundTo;
+import com.yang.to.es.SkuEsModel;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -49,6 +53,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     private CategoryService categoryService;
     @Autowired
     private BrandService brandService;
+    @Autowired
+    private AttrService attrService;
+    @Autowired
+    private WareFeignService wareFeignService;
+    @Autowired
+    private SearchFeignService searchFeignService;
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<SpuInfoEntity> page = this.page(
@@ -81,8 +91,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         //4.保存spu的规格参数 `pms_product_attr_value`
         List<BaseAttrs> baseAttrs = vo.getBaseAttrs();
         productAttrValueService.saveBySpu(spuInfoEntity.getId(),baseAttrs);
-
         //5保存当前spu对应的所有sku信息
+
         //5.1sku的基本信息；pms_sku_info
         List<Skus> skus = vo.getSkus();
         skus.forEach(item->
@@ -195,5 +205,112 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         pageUtils.setList(collect);
         return pageUtils;
     }
+//商品上架
+    @Override
+    public void up(Long spuId) {
+//        List<SkuEsModel> uoProducts=new ArrayList<>();
+        //组装需要的数据
+//        SkuEsModel skuEsModel = new SkuEsModel();
+//        List<SkuEsModel.Attrs> attrsList=new ArrayList<>();
+        //1.查出当前spuid对应的所有sku信息，品牌的名字。
+        List<SkuInfoEntity> skuInfoEntities=skuInfoService.getSkusBySpuId(spuId);
+        List<Long> skuIdList = skuInfoEntities.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
 
+        //封装每个sku信息
+        //查询sku的所有可以被检索的规格属性，根据spuId查询对应的catalogId
+        List<ProductAttrValueEntity> attrs = productAttrValueService.baseAttrListForSpu(spuId);
+        List<Long> collect1 = attrs.stream().map(ProductAttrValueEntity::getAttrId
+        ).collect(Collectors.toList());
+       List<Long> searchAttrIds= attrService.selectSearchAttrs(collect1);
+        Set<Long> idSet=new HashSet<>(searchAttrIds);
+        List<SkuEsModel.Attrs> attrsList1= attrs.stream().filter(item ->
+        {
+            return idSet.contains(item.getAttrId());
+
+        }).map(e ->
+        {
+            SkuEsModel.Attrs attrs1 = new SkuEsModel.Attrs();
+            BeanUtils.copyProperties(e, attrs1);
+            return attrs1;
+        }).collect(Collectors.toList());
+        //发送远程请求，库存系统检查是否有库存
+        List<HasStockTo> data=null;
+        try {
+            R r = wareFeignService.hasStock(skuIdList);
+            data=r.getData(new TypeReference<List<HasStockTo>>() {});
+//             data= JSONUtil.toList
+//                    (JSONUtil.toJsonStr(r.get("data")),HasStockTo.class);
+        }catch (Exception e)
+        {
+            log.error("spuInfoServiceimpl出现异常");
+        }
+        List<HasStockTo> finalData = data;
+        List<SkuEsModel> collect = skuInfoEntities.stream().map(sku ->
+        {
+            SkuEsModel esModel = new SkuEsModel();
+            BeanUtils.copyProperties(sku,esModel);
+            esModel.setSkuPrice(sku.getPrice());
+            esModel.setSkuImg(sku.getSkuDefaultImg());
+            finalData.forEach(e->
+            {
+                if(Objects.equals(sku.getSkuId(), e.getSkuId()))
+                {
+                    esModel.setHasStock(e.getHasStock());
+                }
+                else {
+                    esModel.setHasStock(false);
+                }
+            });
+            //TODO 热度评分
+            esModel.setHotScore(0L);
+            //查询品牌和分类的名字信息
+            BrandEntity byId = brandService.getById(sku.getBrandId());
+            esModel.setBrandName(byId.getName());
+            esModel.setBrandImg(byId.getLogo());
+
+            CategoryEntity byId1 = categoryService.getById(esModel.getCatalogId());
+            esModel.setCatalogName(byId1.getName());
+
+            esModel.setAttrs(attrsList1);
+            return esModel;
+        }).collect(Collectors.toList());
+        //将数据发送给es进行保存
+        R r = searchFeignService.productStatusUp(collect);
+        if(r.getCode()==0)
+        {
+            //远程调用成功
+            //修改spu状态为上架状态
+            SpuInfoEntity spuInfo = new SpuInfoEntity();
+            spuInfo.setUpdateTime(new Date());
+            spuInfo.setId(spuId);
+            spuInfo.setPublishStatus(ProductConstant.StatusEnum.SPU_up.getCode());
+            this.updateById(spuInfo);
+        }
+
+        else {
+            //调用失败
+//            TODO 7. 重复调用？又名接口幂等性，重试机制？
+                //feign调用流程
+                //1.构造请求数据，将对象转为json
+//            RequestTemplate template=buildTemplateFromArgs.creat(argv);
+                //2.发送请求进行执行(执行成功会解码响应数据)
+//                executeAndDecode(template);
+                //3.执行请求会有重试机制
+//                        while (true)
+//                        {
+//                            try {
+//                                executeAndDecode(template);
+//                            }catch ()
+//                            {
+//                                try {
+//                                    retryer.continueOrPropagate(e);
+//                                }catch (){
+//                                    throw ex;
+//                                    continue;
+//                                }
+//                            }
+//                        }
+        }
+
+    }
 }

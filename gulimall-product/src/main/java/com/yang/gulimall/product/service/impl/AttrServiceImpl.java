@@ -12,10 +12,7 @@ import com.yang.gulimall.product.dao.AttrAttrgroupRelationDao;
 import com.yang.gulimall.product.dao.AttrDao;
 import com.yang.gulimall.product.dao.AttrGroupDao;
 import com.yang.gulimall.product.dao.CategoryDao;
-import com.yang.gulimall.product.entity.AttrAttrgroupRelationEntity;
-import com.yang.gulimall.product.entity.AttrEntity;
-import com.yang.gulimall.product.entity.AttrGroupEntity;
-import com.yang.gulimall.product.entity.CategoryEntity;
+import com.yang.gulimall.product.entity.*;
 import com.yang.gulimall.product.service.AttrService;
 import com.yang.gulimall.product.vo.AttrRespVo;
 import com.yang.gulimall.product.vo.attrVo;
@@ -187,6 +184,13 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
 
         pageUtils.setList(collect);
         return pageUtils;
+
+    }
+
+    @Override
+    public List<Long> selectSearchAttrs(List<Long> attrs) {
+        AttrDao baseMapper = this.baseMapper;
+        return baseMapper.selectSearchAttrs(attrs);
 
     }
 
