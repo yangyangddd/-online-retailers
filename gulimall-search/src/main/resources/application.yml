@@ -1,0 +1,20 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848
+  application:
+    name: gulimall-search
+  elasticsearch:
+    uris: "192.168.234.128:9200"
+    socket-timeout: "10s"
+#    username: "user"
+#    password: "secret"
+    restclient:
+      sniffer:
+        interval: "10m"
+        delay-after-failure: "30s"
+  thymeleaf:
+    cache: false
+server:
+  port: 8006

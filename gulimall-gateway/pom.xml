@@ -6,7 +6,7 @@
         <groupId>com.yang.gulimall</groupId>
         <artifactId>gulimall</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <artifactId>gulimall-gateway</artifactId>
     <version>0.0.1-SNAPSHOT</version>

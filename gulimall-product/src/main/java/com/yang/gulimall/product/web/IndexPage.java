@@ -19,8 +19,10 @@ public class IndexPage {
     @GetMapping({"/","/index.html"})
     public String indexPage(Model model)
     {
+        long l = System.currentTimeMillis();
         List<CategoryEntity> list=categoryService.getLevel1Categorys();
         model.addAttribute("categorys",list);
+        System.out.println("消耗时间:"+(System.currentTimeMillis()-l));
         return "index";
     }
     @ResponseBody

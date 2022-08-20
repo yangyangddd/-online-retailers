@@ -18,7 +18,15 @@ spring:
     time-zone: GMT+8
   thymeleaf:
     cache: false
-
+  redis:
+    host: 192.168.234.128
+    port: 6379
+  cache:
+    type: redis
+    redis:
+      time-to-live: 360000
+      use-key-prefix: true
+      cache-null-values: true
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   global-config:
@@ -38,5 +46,4 @@ feign:
     connection-timeout: 5000
     ok-http:
       read-timeout: 5000
-
 # ribbon.ReadTimeout=5000 ribbon.ConnectTime=5000
