@@ -47,3 +47,8 @@ feign:
     ok-http:
       read-timeout: 5000
 # ribbon.ReadTimeout=5000 ribbon.ConnectTime=5000
+gulimall:
+  thread:
+    core-size: 20
+    max-size: 200
+    keep-alive-time: 10

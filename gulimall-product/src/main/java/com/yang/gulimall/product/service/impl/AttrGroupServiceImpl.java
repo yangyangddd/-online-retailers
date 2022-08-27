@@ -8,14 +8,11 @@ import com.yang.common.utils.PageUtils;
 import com.yang.common.utils.Query;
 import com.yang.gulimall.product.dao.AttrDao;
 import com.yang.gulimall.product.dao.AttrGroupDao;
-import com.yang.gulimall.product.entity.AttrAttrgroupRelationEntity;
-import com.yang.gulimall.product.entity.AttrEntity;
-import com.yang.gulimall.product.entity.AttrGroupEntity;
-import com.yang.gulimall.product.service.AttrAttrgroupRelationService;
-import com.yang.gulimall.product.service.AttrGroupService;
-import com.yang.gulimall.product.service.AttrService;
+import com.yang.gulimall.product.entity.*;
+import com.yang.gulimall.product.service.*;
 import com.yang.gulimall.product.vo.AttrGroupRelationVo;
 import com.yang.gulimall.product.vo.GroupWithAttrVo;
+import com.yang.gulimall.product.vo.SkuItemVo;
 import com.yang.gulimall.product.vo.attrVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -35,12 +33,14 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     @Autowired
     private AttrDao attrDao;
     @Autowired
-    private AttrService attrService;
+    private ProductAttrValueService productAttrValueService;
+
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<AttrGroupEntity> page = this.page(
                 new Query<AttrGroupEntity>().getPage(params),
-                new QueryWrapper<AttrGroupEntity>()
+                new QueryWrapper<>()
         );
 
         return new PageUtils(page);
@@ -68,9 +68,7 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
                  wrapper.eq("catelog_id", catelogId);
             }
 
-            wrapper.and((obj)->{
-                obj.eq("attr_group_id",key).or().like("attr_group_name",key);
-            });
+            wrapper.and((obj)-> obj.eq("attr_group_id",key).or().like("attr_group_name",key));
 
 
             IPage<AttrGroupEntity> page = this.page(new Query<AttrGroupEntity>().getPage(params), wrapper);
@@ -135,7 +133,60 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
           entity.setAttrs(collect1);
           //得到每个分组的attrVo集合,并封装至vo对象中
         }).collect(Collectors.toList());
-
+    }
+    //根据skuId获得其所有的分组和属性信息
+    @Override
+    public List<SkuItemVo.SpuItemAttrGroupVo> listBySkuId(Long skuId, Long spuId) {
+        List<SkuItemVo.SpuItemAttrGroupVo> spuItemAttrGroupVos=new ArrayList<>();
+        //根据skuId获取所有SkuSaleAttrValueEntity集合
+        List<ProductAttrValueEntity> productAttrValueEntities = productAttrValueService.list(new QueryWrapper
+                <ProductAttrValueEntity>().eq("spu_id", spuId));
+        //获取所有对应的attrId集合
+        List<Long> attrIds = productAttrValueEntities.stream().
+                map(ProductAttrValueEntity::getAttrId).collect(Collectors.toList());
+//        //获取所有的attr集合
+//        List<AttrEntity> attrEntities = attrService.listByIds(attrIds);
+        //根据attr集合获取所有AttrAttrgroupRelationEntity集合
+        if(attrIds.isEmpty())
+        {
+            return null;
+        }
+       List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities=
+               attrAttrgroupRelationService.listByAttrIds(attrIds);
+        List<Long> attrGroupIds = attrAttrgroupRelationEntities.stream().
+                map(AttrAttrgroupRelationEntity::getAttrGroupId).collect(Collectors.toList());
+        //根据AttrAttrgroupRelationEntity集合获取其所有分组
+        List<AttrGroupEntity> attrGroupEntityList = this.listByIds(attrGroupIds);
+        //根据分组集合获取每个分组下的所有属性,并封装spuItemAttrGroupVo；
+        attrGroupEntityList.forEach(group->
+        {
+            SkuItemVo.SpuItemAttrGroupVo spuItemAttrGroupVo = new SkuItemVo.SpuItemAttrGroupVo();
+            spuItemAttrGroupVo.setGroupName(group.getAttrGroupName());
+            List<SkuItemVo.SpuBaseAttrVo> spuBaseAttrVoList=new ArrayList<>();
+            //获得每个分组下的所有属性
+            attrAttrgroupRelationEntities.forEach(relation->
+                    {
+                        SkuItemVo.SpuBaseAttrVo baseAttrVo=new SkuItemVo.SpuBaseAttrVo();
+                        if(Objects.equals(group.getAttrGroupId(), relation.getAttrGroupId()))
+                        {
+                            //根据attrId将属性设置到baseAttrVo
+                            Long attrId = relation.getAttrId();
+                            productAttrValueEntities.forEach(e->
+                            {
+                                if(Objects.equals(e.getAttrId(), attrId))
+                                {
+                                    baseAttrVo.setAttrName(e.getAttrName());
+                                    baseAttrVo.setAttrValue(e.getAttrValue());
+                                }
+                            });
+                        }
+                        //加入属性进入集合中
+                        spuBaseAttrVoList.add(baseAttrVo);
+                    });
+                    spuItemAttrGroupVo.setAttrs(spuBaseAttrVoList);
+                    spuItemAttrGroupVos.add(spuItemAttrGroupVo);
+        });
+        return spuItemAttrGroupVos;
     }
 
 }

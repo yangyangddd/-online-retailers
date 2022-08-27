@@ -6,6 +6,7 @@ import com.yang.gulimall.product.entity.AttrEntity;
 import com.yang.gulimall.product.entity.AttrGroupEntity;
 import com.yang.gulimall.product.vo.AttrGroupRelationVo;
 import com.yang.gulimall.product.vo.GroupWithAttrVo;
+import com.yang.gulimall.product.vo.SkuItemVo;
 
 import java.util.List;
 import java.util.Map;
@@ -32,5 +33,7 @@ public interface AttrGroupService extends IService<AttrGroupEntity> {
     PageUtils getNoRelationAttr(Map<String, Object> params, Long attrGroupId);
 
     List<GroupWithAttrVo> getALlGroupWithAttr(Long catelogId);
+
+    List<SkuItemVo.SpuItemAttrGroupVo> listBySkuId(Long skuId, Long spuId);
 }
 

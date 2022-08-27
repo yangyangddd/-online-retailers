@@ -17,6 +17,27 @@
         <result property="price" column="price"/>
         <result property="saleCount" column="sale_count"/>
     </resultMap>
+    <resultMap id="SkuItemSaleAttrVo" type="com.yang.gulimall.product.vo.SkuItemVo$SkuItemSaleAttrVo">
+        <result property="attrId" column="attrId"/>
+        <result property="attrName" column="attrName"/>
+        <collection property="attrValues" ofType="com.yang.gulimall.product.vo.AttrValueWithSkuIdVo">
+            <result property="attrValue" column="attrValue"/>
+            <result property="skuIds" column="skuIds"/>
+        </collection>
+    </resultMap>
+    <select id="getSaleAttrsBySpuId" resultMap="SkuItemSaleAttrVo">
+        SELECT
+            skuSale.attr_id attrId,
+            skuSale.attr_name attrName,
+            skuSale.`attr_value` attrValue,
+            GROUP_CONCAT(DISTINCT skuInfo.`sku_id`) skuIds
+        FROM
+            `pms_sku_info` skuInfo
+                LEFT JOIN `pms_sku_sale_attr_value` skuSale
+                          ON skuInfo.sku_id=skuSale.sku_id
+        WHERE spu_id=#{spuId}
+        GROUP BY  skuSale.attr_id,skuSale.attr_name,skuSale.`attr_value`
+    </select>
 
 
 </mapper>

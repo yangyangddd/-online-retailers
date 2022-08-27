@@ -129,4 +129,10 @@ public class AttrAttrgroupRelationServiceImpl extends ServiceImpl<AttrAttrgroupR
         //最后根据查出来的id得到可选属性列表返回至前端
     }
 
+    //根据attrId获取所有的AttrAttrgroupRelationEntity集合
+    @Override
+    public List<AttrAttrgroupRelationEntity> listByAttrIds(List<Long> attrIds) {
+        return this.baseMapper.selectByAttrIds(attrIds);
+    }
+
 }

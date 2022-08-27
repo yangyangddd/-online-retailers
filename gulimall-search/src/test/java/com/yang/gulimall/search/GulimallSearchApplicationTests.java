@@ -1,7 +1,7 @@
 package com.yang.gulimall.search;
 
 import cn.hutool.json.JSONUtil;
-import com.yang.gulimall.search.config.esConfig;
+import com.yang.gulimall.search.config.EsConfig;
 import com.yang.gulimall.search.pojo.bank;
 import lombok.Data;
 import org.elasticsearch.action.search.SearchRequest;
@@ -55,7 +55,7 @@ class GulimallSearchApplicationTests {
 
 //        String s = JSONUtil.toJsonStr(user);
 //        indexRequest.source(s, XContentType.JSON);
-//        System.out.println(restHighLevelClient.index(indexRequest, esConfig.COMMON_OPTIONS));
+//        System.out.println(restHighLevelClient.index(indexRequest, EsConfig.COMMON_OPTIONS));
     }
     @Data
     class user{
@@ -93,7 +93,7 @@ class GulimallSearchApplicationTests {
         System.out.println(builder.toString());
         System.out.println("...................................................");
         request.source(builder);
-        SearchResponse search = restHighLevelClient.search(request, esConfig.COMMON_OPTIONS);
+        SearchResponse search = restHighLevelClient.search(request, EsConfig.COMMON_OPTIONS);
         System.out.println(search.toString());
         SearchHits hits = search.getHits();
         SearchHit[] hitsHits = hits.getHits();

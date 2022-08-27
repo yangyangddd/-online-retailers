@@ -2,7 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.yang.gulimall.product.dao.SkuSaleAttrValueDao">
-
 	<!-- 可根据自己的需求，是否要使用 -->
     <resultMap type="com.yang.gulimall.product.entity.SkuSaleAttrValueEntity" id="skuSaleAttrValueMap">
         <result property="id" column="id"/>
@@ -12,6 +11,18 @@
         <result property="attrValue" column="attr_value"/>
         <result property="attrSort" column="attr_sort"/>
     </resultMap>
+    <select id="getSaleAttrsBySpuId" resultType="com.yang.gulimall.product.vo.SkuItemVo$SkuItemSaleAttrVo">
+        SELECT
+            skuSale.attr_id attrId,
+            skuSale.attr_name attrName,
+            GROUP_CONCAT(DISTINCT skuSale.attr_value) attrValues
+        FROM
+            `pms_sku_info` skuInfo
+                LEFT JOIN `pms_sku_sale_attr_value` skuSale
+                          ON skuInfo.sku_id=skuSale.sku_id
+        WHERE spu_id=#{spuId}
+        GROUP BY  skuSale.attr_id,skuSale.attr_name
+    </select>
 
 
 </mapper>

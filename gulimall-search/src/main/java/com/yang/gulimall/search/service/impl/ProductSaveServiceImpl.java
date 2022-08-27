@@ -1,7 +1,7 @@
 package com.yang.gulimall.search.service.impl;
 
 import cn.hutool.json.JSONUtil;
-import com.yang.gulimall.search.config.esConfig;
+import com.yang.gulimall.search.config.EsConfig;
 import com.yang.gulimall.search.constant.EsConstant;
 import com.yang.gulimall.search.service.ProductSaveService;
 import com.yang.to.es.SkuEsModel;
@@ -39,7 +39,7 @@ public class ProductSaveServiceImpl implements ProductSaveService {
             bulkRequest.add(request);
         }
 
-        BulkResponse bulk = restHighLevelClient.bulk(bulkRequest, esConfig.COMMON_OPTIONS);
+        BulkResponse bulk = restHighLevelClient.bulk(bulkRequest, EsConfig.COMMON_OPTIONS);
         //TODO 1.如果批量错误
         boolean b = bulk.hasFailures();
         List<String> collect = Arrays.stream(bulk.getItems()).
