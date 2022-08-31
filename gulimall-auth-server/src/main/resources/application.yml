@@ -10,5 +10,14 @@ spring:
   redis:
     host: 192.168.234.128
     port: 6379
+  session:
+    store-type: redis
+
 server:
   port: 8008
+  servlet:
+    session:
+      cookie:
+        domain: gulimall.com #放大session作用域
+        name: GULISESSION #更改session的名字
+      timeout: 30m

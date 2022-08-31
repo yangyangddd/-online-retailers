@@ -27,6 +27,8 @@ spring:
       time-to-live: 360000
       use-key-prefix: true
       cache-null-values: true
+  session:
+    store-type: redis
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   global-config:
@@ -38,6 +40,12 @@ server:
   port: 8003
   error:
     include-binding-errors: always
+  servlet:
+    session:
+      cookie:
+        domain: gulimall.com #放大session作用域
+        name: GULISESSION #更改session的名字
+      timeout: 30m
 logging:
   level:
    com.yang.gulimall: debug
@@ -52,3 +60,4 @@ gulimall:
     core-size: 20
     max-size: 200
     keep-alive-time: 10
+

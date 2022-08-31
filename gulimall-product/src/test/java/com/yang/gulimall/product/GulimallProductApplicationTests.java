@@ -2,6 +2,7 @@ package com.yang.gulimall.product;
 
 import com.yang.gulimall.product.entity.BrandEntity;
 import com.yang.gulimall.product.service.BrandService;
+import com.yang.gulimall.product.service.SpuInfoService;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -14,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 @SpringBootTest
 class GulimallProductApplicationTests {
 
+    @Autowired
+    SpuInfoService spuInfoService;
     @Autowired
     BrandService brandService;
     @Autowired
@@ -41,6 +44,10 @@ class GulimallProductApplicationTests {
         Thread.sleep(30000);
         lock.unlock();
     }
-
+    @Test
+    void add()
+    {
+        spuInfoService.up(13L);
+    }
 
 }

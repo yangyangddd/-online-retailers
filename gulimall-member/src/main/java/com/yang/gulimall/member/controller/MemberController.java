@@ -2,8 +2,14 @@ package com.yang.gulimall.member.controller;
 
 import com.yang.common.utils.PageUtils;
 import com.yang.common.utils.R;
+import com.yang.exception.BizCodeEnum;
 import com.yang.gulimall.member.entity.MemberEntity;
+import com.yang.gulimall.member.exception.EmailExistException;
+import com.yang.gulimall.member.exception.UsernameExistException;
 import com.yang.gulimall.member.service.MemberService;
+import com.yang.gulimall.member.vo.MemberLoginVo;
+import com.yang.gulimall.member.vo.MemberRegistVo;
+import com.yang.gulimall.member.vo.SocialUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,10 +31,35 @@ public class MemberController {
     @Autowired
     private MemberService memberService;
 
-    @PostMapping("/regist")
-    public R regist()
+    @PostMapping("/oauth/login")
+    public R oauthLogin(@RequestBody SocialUser socialUser)
     {
+      MemberEntity memberEntity=  memberService.login(socialUser);
+
+      return R.ok().setData(memberEntity);
+    }
+    @PostMapping("/regist")
+    public R regist(@RequestBody MemberRegistVo vo)
+    {
+        try {
+            memberService.regis(vo);
+        } catch (EmailExistException e) {
+            return R.error(BizCodeEnum.EMAIL_EXIST_EXCEPTION.getCode(),BizCodeEnum.EMAIL_EXIST_EXCEPTION.getMsg());
+        }catch (UsernameExistException e){
+            return R.error(BizCodeEnum.USER_EXIST_EXCEPTION.getCode(),BizCodeEnum.USER_EXIST_EXCEPTION.getMsg());
+        }
         return R.ok();
+    }
+    @PostMapping("/login")
+    public R login(@RequestBody MemberLoginVo vo)
+    {
+        MemberEntity memberEntity=memberService.login(vo);
+        if(memberEntity!=null) {
+            return R.ok().setData(memberEntity);
+        }
+        else {
+            return R.error(BizCodeEnum.LOGINACTT_PASSWORD_INVALID_EXCEPTION.getCode(), BizCodeEnum.LOGINACTT_PASSWORD_INVALID_EXCEPTION.getMsg());
+        }
     }
     /**
      * 列表

@@ -1,4 +1,6 @@
 spring:
+  session:
+    store-type: redis
   cloud:
     nacos:
       config:
@@ -16,5 +18,14 @@ spring:
         delay-after-failure: "30s"
   thymeleaf:
     cache: false
+  redis:
+    port: 6379
+    host: 192.168.234.128
 server:
   port: 8006
+  servlet:
+    session:
+      cookie:
+        domain: gulimall.com #放大session作用域
+        name: GULISESSION #更改session的名字
+      timeout: 30m
