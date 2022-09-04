@@ -25,7 +25,8 @@ public class CartInterceptor implements HandlerInterceptor {
         UserInfoTo userInfoTo=new UserInfoTo();
 
         HttpSession session = request.getSession();
-        String s = JSONUtil.toJsonStr(session.getAttribute(AuthServerConstant.LOGIN_USER));
+        Object attribute = session.getAttribute(AuthServerConstant.LOGIN_USER);
+        String s = JSONUtil.toJsonStr(attribute);
         MemberRespVo memberRespVo = JSONUtil.toBean(s, MemberRespVo.class);
         if(memberRespVo!=null)
         {
@@ -62,6 +63,6 @@ public class CartInterceptor implements HandlerInterceptor {
         cookie.setDomain("gulimall.com");
         cookie.setMaxAge(CartConstant.TEMP_USER_COOKIE_TIMEOUT);
         response.addCookie(cookie);
-        toThreadLocal.remove();
+//        toThreadLocal.remove();
     }
 }

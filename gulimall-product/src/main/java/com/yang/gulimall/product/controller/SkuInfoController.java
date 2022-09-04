@@ -9,7 +9,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 
@@ -27,6 +29,11 @@ public class SkuInfoController {
     @Autowired
     private SkuInfoService skuInfoService;
 
+    @PostMapping("/product/skuinfo/newPrice")
+    public Map<Long,BigDecimal> getNewPrice(@RequestBody List<Long> skuIds)
+    {
+        return skuInfoService.getNewPriceBySkuIds(skuIds);
+    }
     /**
      * 列表
      */

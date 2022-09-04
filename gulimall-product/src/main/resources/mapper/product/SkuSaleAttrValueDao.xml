@@ -23,6 +23,11 @@
         WHERE spu_id=#{spuId}
         GROUP BY  skuSale.attr_id,skuSale.attr_name
     </select>
+    <select id="getSkuSaleAttrValuesAsStringList" resultType="java.lang.String">
+        select CONCAT(attr_name,":",attr_value)
+        from `pms_sku_sale_attr_value`
+        where sku_id=#{skuId}
+    </select>
 
 
 </mapper>

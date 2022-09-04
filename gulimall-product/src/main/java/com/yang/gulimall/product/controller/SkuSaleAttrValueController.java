@@ -1,19 +1,15 @@
 package com.yang.gulimall.product.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.yang.gulimall.product.entity.SkuSaleAttrValueEntity;
-import com.yang.gulimall.product.service.SkuSaleAttrValueService;
 import com.yang.common.utils.PageUtils;
 import com.yang.common.utils.R;
+import com.yang.gulimall.product.entity.SkuSaleAttrValueEntity;
+import com.yang.gulimall.product.service.SkuSaleAttrValueService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 
@@ -30,6 +26,12 @@ public class SkuSaleAttrValueController {
     @Autowired
     private SkuSaleAttrValueService skuSaleAttrValueService;
 
+    @GetMapping("/stringlist/{skuId}")
+    public List<String> getSkuSaleAttrValues(@PathVariable("skuId") Long skuId)
+    {
+        //根据skuId得到其所有的销售属性
+        return skuSaleAttrValueService.getSkuSaleAttrValuesAsStringList(skuId);
+    }
     /**
      * 列表
      */

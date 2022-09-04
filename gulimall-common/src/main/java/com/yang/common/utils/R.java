@@ -30,6 +30,13 @@ public class R extends HashMap<String, Object> {
 		T t = JSONUtil.toBean(s, tTypeReference, false);
 		return t;
 	}
+	public<T> T getData(String key,TypeReference<T> tTypeReference)
+	{
+		Object data=get(key);
+		String s = JSONUtil.toJsonStr(data);
+		T t = JSONUtil.toBean(s, tTypeReference, false);
+		return t;
+	}
 	public R setData(Object data)
 	{
 		put("data",data);

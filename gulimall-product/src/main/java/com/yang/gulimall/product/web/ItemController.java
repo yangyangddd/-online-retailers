@@ -21,4 +21,5 @@ public class ItemController {
         //因为前端不支持long数组序列化（自己找不到解决方案),将其转换成字符串
         return "item";
     }
+
 }

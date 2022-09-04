@@ -16,3 +16,10 @@ spring:
   redis:
     host: 192.168.234.128
     port: 6379
+  thymeleaf:
+    cache: false
+gulimall:
+  thread:
+    core-size: 20
+    max-size: 200
+    keep-alive-time: 10

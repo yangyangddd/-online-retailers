@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -144,6 +145,17 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
         return this.baseMapper.getSaleAttrsBySpuId(spuId);
 
 
+    }
+
+    @Override
+    public Map<Long,BigDecimal> getNewPriceBySkuIds(List<Long> skuIds) {
+        Map<Long,BigDecimal> map=new HashMap<>();
+        List<SkuInfoEntity> skuInfoEntities = this.list(new QueryWrapper<SkuInfoEntity>().in("sku_id", skuIds));
+        skuInfoEntities.forEach(e->
+                map.put(e.getSkuId(),e.getPrice())
+        );
+
+        return map;
     }
 
 
