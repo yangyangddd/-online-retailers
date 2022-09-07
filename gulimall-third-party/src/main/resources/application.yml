@@ -7,4 +7,8 @@ spring:
     name: gulimall-third-party
 server:
   port: 8005
-
+#seata:
+#  tx-service-group: seata-storage-service
+#  service:
+#    vgroup-mapping:
+#      seata-storage-service: default

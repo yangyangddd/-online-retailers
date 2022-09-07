@@ -9,4 +9,5 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public interface MemberFeign {
     @RequestMapping("member/memberreceiveaddress/member/{id}")
     public R getByMemberId(@PathVariable("id") Long id);
+
 }

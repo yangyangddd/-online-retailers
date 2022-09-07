@@ -55,6 +55,11 @@ feign:
     ok-http:
       read-timeout: 5000
 # ribbon.ReadTimeout=5000 ribbon.ConnectTime=5000
+#seata:
+#  tx-service-group: seata-storage-service
+#  service:
+#    vgroup-mapping:
+#      seata-storage-service: default
 gulimall:
   thread:
     core-size: 20

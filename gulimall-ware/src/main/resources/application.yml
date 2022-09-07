@@ -24,3 +24,8 @@ server:
 logging:
   level:
    com.yang: debug
+#seata:
+#  tx-service-group: seata-storage-service
+#  service:
+#    vgroup-mapping:
+#      seata-storage-service: default

@@ -29,3 +29,8 @@ server:
         domain: gulimall.com #放大session作用域
         name: GULISESSION #更改session的名字
       timeout: 30m
+#seata:
+#  tx-service-group: seata-storage-service
+#  service:
+#    vgroup-mapping:
+#      seata-storage-service: default

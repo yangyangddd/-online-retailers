@@ -290,7 +290,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         else {
             //调用失败
 //            TODO 7. 重复调用？又名接口幂等性，重试机制？
-                //feign调用流程
+                //TODO feign调用流程
                 //1.构造请求数据，将对象转为json
 //            RequestTemplate template=buildTemplateFromArgs.creat(argv);
                 //2.发送请求进行执行(执行成功会解码响应数据)
@@ -312,5 +312,13 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 //                        }
         }
 
+    }
+
+    @Override
+    public SpuInfoEntity getSpuInfoBySkuId(Long skuId) {
+        //根据skuId获取spu信息
+        SkuInfoEntity skuInfoEntity = skuInfoService.getById(skuId);
+        Long spuId = skuInfoEntity.getSpuId();
+        return getById(spuId);
     }
 }

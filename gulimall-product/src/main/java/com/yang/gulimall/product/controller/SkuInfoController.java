@@ -29,6 +29,7 @@ public class SkuInfoController {
     @Autowired
     private SkuInfoService skuInfoService;
 
+
     @PostMapping("/product/skuinfo/newPrice")
     public Map<Long,BigDecimal> getNewPrice(@RequestBody List<Long> skuIds)
     {

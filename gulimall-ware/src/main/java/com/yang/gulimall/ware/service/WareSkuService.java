@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.yang.common.utils.PageUtils;
 import com.yang.gulimall.ware.entity.WareSkuEntity;
 import com.yang.gulimall.ware.vo.HasStockVo;
+import com.yang.gulimall.ware.vo.LockStockResultVo;
+import com.yang.gulimall.ware.vo.WareSkuLockVo;
 
 import java.util.List;
 import java.util.Map;
@@ -22,5 +24,7 @@ public interface WareSkuService extends IService<WareSkuEntity> {
     List<WareSkuEntity> getBySkuId(List<Long> skuId);
 
     List<HasStockVo> HasStock(List<Long> skuIds);
+
+    List<LockStockResultVo> orderLockStock(WareSkuLockVo vo);
 }
 
