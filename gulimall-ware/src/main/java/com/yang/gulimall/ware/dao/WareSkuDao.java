@@ -19,4 +19,6 @@ import java.util.List;
 public interface WareSkuDao extends BaseMapper<WareSkuEntity> {
     //SELECT  sku_id,SUM(stock) FROM `wms_ware_sku` WHERE sku_id IN(2,28) GROUP BY sku_id
     List<HasStock2Vo> selectSumStock(@Param("skuIds") List<Long> skuIds);
+
+    void unLockStock(@Param("skuId") Long skuId, @Param("wareId") Long wareId, @Param("num") Integer num);
 }

@@ -6,6 +6,8 @@ import com.yang.gulimall.ware.entity.WareSkuEntity;
 import com.yang.gulimall.ware.vo.HasStockVo;
 import com.yang.gulimall.ware.vo.LockStockResultVo;
 import com.yang.gulimall.ware.vo.WareSkuLockVo;
+import com.yang.to.OrderVo;
+import com.yang.to.mq.StockLockedTo;
 
 import java.util.List;
 import java.util.Map;
@@ -26,5 +28,10 @@ public interface WareSkuService extends IService<WareSkuEntity> {
     List<HasStockVo> HasStock(List<Long> skuIds);
 
     List<LockStockResultVo> orderLockStock(WareSkuLockVo vo);
+    public void unLockStock(Long skuId,Long wareId,Integer num,Long taskDetailId);
+
+    void unlockStock(StockLockedTo stockLockedTo);
+
+    void unlockStock(OrderVo vo);
 }
 

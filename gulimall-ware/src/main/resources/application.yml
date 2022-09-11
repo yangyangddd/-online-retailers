@@ -5,6 +5,15 @@ spring:
     username: root
     password: root
     url: jdbc:mysql://192.168.234.128:3306/gulimall_wms
+  rabbitmq:
+    username: itcast
+    password: 123
+    host: 192.168.234.128
+    port: 5672
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: manual #手动ack
   cloud:
     nacos:
       discovery:

@@ -44,7 +44,7 @@ public class OrderConfirmVo {
     public BigDecimal getTotal() {
         BigDecimal num=new BigDecimal(0);
         for (OrderItemVo item : items) {
-            num = num.add(item.getPrice());
+            num = num.add(item.getPrice().multiply(new BigDecimal(getCount())));
         }
         return num;
     }

@@ -12,6 +12,10 @@
         <result property="skuName" column="sku_name"/>
         <result property="stockLocked" column="stock_locked"/>
     </resultMap>
+    <update id="unLockStock">
+    update `wms_ware_sku` set stock_locked=stock_locked-#{num}
+        where sku_id=#{skuId} and ware_id=#{wareId}
+    </update>
     <select id="selectSumStock" resultType="com.yang.gulimall.ware.vo.HasStock2Vo">
         SELECT  sku_id,SUM(stock-stock_locked) as hasStock FROM `wms_ware_sku` WHERE sku_id IN(
             <foreach collection="skuIds" item="id" separator=",">

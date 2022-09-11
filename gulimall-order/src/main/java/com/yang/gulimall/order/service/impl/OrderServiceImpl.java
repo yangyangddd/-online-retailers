@@ -14,6 +14,7 @@ import com.yang.gulimall.order.constant.OrderConstant;
 import com.yang.gulimall.order.dao.OrderDao;
 import com.yang.gulimall.order.entity.OrderEntity;
 import com.yang.gulimall.order.entity.OrderItemEntity;
+import com.yang.gulimall.order.entity.PaymentInfoEntity;
 import com.yang.gulimall.order.enume.OrderStatusEnum;
 import com.yang.gulimall.order.feign.CartFeign;
 import com.yang.gulimall.order.feign.MemberFeign;
@@ -22,10 +23,14 @@ import com.yang.gulimall.order.feign.WmsFeign;
 import com.yang.gulimall.order.interceptor.LoginUserInterceptor;
 import com.yang.gulimall.order.service.OrderItemService;
 import com.yang.gulimall.order.service.OrderService;
+import com.yang.gulimall.order.service.PaymentInfoService;
 import com.yang.gulimall.order.to.OrderCreateTo;
 import com.yang.gulimall.order.vo.*;
+import com.yang.to.OrderVo;
 import com.yang.vo.MemberRespVo;
-//import io.seata.spring.annotation.GlobalTransactional;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -62,6 +67,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     OrderDao orderDao;
     @Autowired
     OrderItemService orderItemService;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+    @Autowired
+    PaymentInfoService paymentInfoService;
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<OrderEntity> page = this.page(
@@ -177,6 +186,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 {
                     //TODO 远程锁库存
                     responseVo.setOrder(order.getOrder());
+                    //todo 订单创建成功发送消息给mq
+                    rabbitTemplate.convertAndSend("order-event-exchange","order.create.order",order.getOrder());
                     return responseVo;
                     //锁定成功
                 }
@@ -203,6 +214,102 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 //        stringRedisTemplate.delete(OrderConstant.USER_ORDER_TOKEN_PREFIX + id);
 //        String s = UUID.randomUUID().toString();
 //        return null;
+    }
+
+    //根据orderSn获取订单
+    @Override
+    public OrderEntity getOrderByOrderSn(String orderSn) {
+       return this.getOne(new QueryWrapper<OrderEntity>().eq("order_sn", orderSn));
+    }
+
+    //关闭订单
+    @Override
+    public void closeOrder(OrderEntity entity) {
+        //关闭订单之前需查询当前要关闭的订单的状态
+        OrderEntity orderEntity = this.getById(entity.getId());
+        //状态为待付款
+        if(orderEntity.getStatus().equals(OrderStatusEnum.CREATE_NEW.getCode()))
+        {
+            OrderEntity update = new OrderEntity();
+            update.setId(orderEntity.getId());
+            update.setStatus(OrderStatusEnum.CANCLED.getCode());
+            this.updateById(update);
+            //发送mq一个
+            OrderEntity byId = this.getById(entity.getId());
+            OrderVo orderVo=new OrderVo();
+            BeanUtils.copyProperties(byId,orderVo);
+            //TODO 保证消息发送出去，确保消息可靠性，做好日志记录
+            //定期扫描数据库，失败后再发送一遍
+            try {
+                rabbitTemplate.convertAndSend("order-event-exchange","order.release.other",orderVo);
+            } catch (AmqpException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    @Override
+    //创建订单支付页
+    public PayVo getOrderPay(String orderSn) {
+        PayVo payVo = new PayVo();
+        OrderEntity order = this.getOrderByOrderSn(orderSn);
+        BigDecimal bigDecimal = order.getPayAmount().setScale(2, BigDecimal.ROUND_UP);
+
+        payVo.setTotal_amount(bigDecimal.toString());
+        payVo.setOut_trade_no(order.getOrderSn());
+        List<OrderItemEntity> order_sn = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", orderSn));
+        OrderItemEntity orderItemEntity = order_sn.get(0);
+        payVo.setSubject(orderItemEntity.getSpuName());
+        payVo.setBody(orderItemEntity.getSpuName());
+        return payVo;
+    }
+
+    @Override
+    public PageUtils listWithItem(Map<String, Object> params) {
+        MemberRespVo memberRespVo = LoginUserInterceptor.loginUser.get();
+        IPage<OrderEntity> page = this.page(
+                new Query<OrderEntity>().getPage(params),
+                new QueryWrapper<OrderEntity>().eq("member_id",memberRespVo.getId())
+                        .orderByDesc("modify_time")
+        );
+        List<OrderEntity> order_sn1 = page.getRecords().stream().map(e ->
+        {
+
+
+            List<OrderItemEntity> order_sn = orderItemService.list(new QueryWrapper<OrderItemEntity>()
+                    .eq("order_sn", e.getOrderSn()));
+            e.setItemEntityList(order_sn);
+            return e;
+        }).collect(Collectors.toList());
+        page.setRecords(order_sn1);
+        return new PageUtils(page);
+    }
+
+    @Override
+    public String handlePayResult(PayAsyncVo vo) {
+//保存交易流水
+        PaymentInfoEntity infoEntity = new PaymentInfoEntity();
+        infoEntity.setAlipayTradeNo(vo.getTrade_no());
+        infoEntity.setOrderSn(vo.getOut_trade_no());
+        infoEntity.setPaymentStatus(vo.getTrade_status());
+        infoEntity.setCallbackTime(vo.getNotify_time());
+        paymentInfoService.save(infoEntity);
+//修改订单状态
+        if ("TRADE_SUCCESS".equals(vo.getTrade_status())||"TRADE_FINISHED".equals(vo.getTrade_status())) {
+            //支付成功状态
+            String outTradeNo = vo.getOut_trade_no();
+            this.updateOrderStatus(outTradeNo,OrderStatusEnum.PAYED.getCode());
+        }
+        return "success";
+    }
+
+    private void updateOrderStatus(String outTradeNo, Integer code) {
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setOrderSn(outTradeNo);
+        orderEntity.setStatus(code);
+        this.update(orderEntity,new QueryWrapper<OrderEntity>()
+                .eq("order_sn",outTradeNo));
     }
 
     // 保存订单数据
@@ -289,7 +396,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         //3.商品的sku信息
         itemEntity.setSkuId(e.getSkuId());
         itemEntity.setSkuName(e.getTitle());
-        itemEntity.setSkuName(e.getImage());
+        itemEntity.setSkuPic(e.getImage());
         itemEntity.setSkuPrice(e.getPrice());
         //TODO 数据库要求json 老师使用string分隔
         String s = JSONUtil.toJsonStr(e.getSkuAttr());

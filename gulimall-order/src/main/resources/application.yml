@@ -30,6 +30,9 @@ spring:
   redis:
     host: 192.168.234.128
     port: 6379
+  mvc:
+    format:
+      date: yyyy-MM-dd HH:mm:ss
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   global-config:
@@ -46,4 +49,10 @@ gulimall:
 #  tx-service-group: seata-storage-service
 #  service:
 #    vgroup-mapping:
+
 #      seata-storage-service: default
+alipay:
+  return-url: http://member.gulimall.com/memberOrder.html
+  gateway-url: https://openapi.alipaydev.com/gateway.do
+  sign-type: RSA2
+  charset: utf-8

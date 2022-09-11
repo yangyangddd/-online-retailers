@@ -25,7 +25,12 @@ public class R extends HashMap<String, Object> {
 
 	public<T> T getData(TypeReference<T> tTypeReference)
 	{
+
 		Object data=get("data");
+		if(data==null)
+		{
+			return null;
+		}
 		String s = JSONUtil.toJsonStr(data);
 		T t = JSONUtil.toBean(s, tTypeReference, false);
 		return t;
@@ -33,6 +38,10 @@ public class R extends HashMap<String, Object> {
 	public<T> T getData(String key,TypeReference<T> tTypeReference)
 	{
 		Object data=get(key);
+		if(data==null)
+		{
+			return null;
+		}
 		String s = JSONUtil.toJsonStr(data);
 		T t = JSONUtil.toBean(s, tTypeReference, false);
 		return t;
