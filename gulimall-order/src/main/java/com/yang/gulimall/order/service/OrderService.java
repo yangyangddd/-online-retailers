@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.yang.common.utils.PageUtils;
 import com.yang.gulimall.order.entity.OrderEntity;
 import com.yang.gulimall.order.vo.*;
+import com.yang.to.mq.SeckillOrderTo;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -32,5 +33,7 @@ public interface OrderService extends IService<OrderEntity> {
     PageUtils listWithItem(Map<String, Object> params);
 
     String handlePayResult(PayAsyncVo vo);
+
+    void createSeckillOrder(SeckillOrderTo seckillOrderTo);
 }
 

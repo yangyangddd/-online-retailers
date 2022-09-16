@@ -27,6 +27,7 @@ import com.yang.gulimall.order.service.PaymentInfoService;
 import com.yang.gulimall.order.to.OrderCreateTo;
 import com.yang.gulimall.order.vo.*;
 import com.yang.to.OrderVo;
+import com.yang.to.mq.SeckillOrderTo;
 import com.yang.vo.MemberRespVo;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -302,6 +303,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             this.updateOrderStatus(outTradeNo,OrderStatusEnum.PAYED.getCode());
         }
         return "success";
+    }
+
+    @Override
+    public void createSeckillOrder(SeckillOrderTo seckillOrderTo) {
+        //TODO 保存订单信息
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setOrderSn(seckillOrderTo.getOrderSn());
+        orderEntity.setMemberId(seckillOrderTo.getMemberId());
+        orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
+        BigDecimal multiply = seckillOrderTo.getSeckillPrice().multiply(new BigDecimal("" + seckillOrderTo.getNum()));
+        orderEntity.setPromotionAmount(multiply);
+        this.save(orderEntity);
+        //TODO 保存订单项信息
+        OrderItemEntity orderItemEntity = new OrderItemEntity();
+        orderItemEntity.setOrderSn(seckillOrderTo.getOrderSn());
+        orderItemEntity.setRealAmount(multiply);
+        orderItemEntity.setSkuQuantity(seckillOrderTo.getNum());
+//   TODO 获取当前sku的详细信息进行设置     productFeign.getSpuInfoBySkuId()
+        orderItemService.save(orderItemEntity);
     }
 
     private void updateOrderStatus(String outTradeNo, Integer code) {

@@ -3,6 +3,7 @@ package com.yang.gulimall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yang.common.utils.PageUtils;
 import com.yang.gulimall.product.entity.SkuInfoEntity;
+import com.yang.gulimall.product.vo.SeckillSkuVo;
 import com.yang.gulimall.product.vo.SkuItemVo;
 
 import java.math.BigDecimal;
@@ -27,5 +28,7 @@ public interface SkuInfoService extends IService<SkuInfoEntity> {
     List<SkuItemVo.SkuItemSaleAttrVo> getSaleAttrsBySpuId(Long spuId);
 
     Map<Long,BigDecimal> getNewPriceBySkuIds(List<Long> skuIds);
+
+    List<SkuInfoEntity> getSkuInfoByPromotionId(List<SeckillSkuVo> vo);
 }
 

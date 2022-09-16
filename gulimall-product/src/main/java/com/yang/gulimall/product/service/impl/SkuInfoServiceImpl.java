@@ -1,15 +1,20 @@
 package com.yang.gulimall.product.service.impl;
 
+import cn.hutool.core.lang.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yang.common.utils.PageUtils;
 import com.yang.common.utils.Query;
+import com.yang.common.utils.R;
 import com.yang.gulimall.product.dao.SkuInfoDao;
 import com.yang.gulimall.product.entity.SkuImagesEntity;
 import com.yang.gulimall.product.entity.SkuInfoEntity;
 import com.yang.gulimall.product.entity.SpuInfoDescEntity;
+import com.yang.gulimall.product.feign.SeckillFeignService;
 import com.yang.gulimall.product.service.*;
+import com.yang.gulimall.product.to.SeckillSkuRedisTo;
+import com.yang.gulimall.product.vo.SeckillSkuVo;
 import com.yang.gulimall.product.vo.SkuItemVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 
 @Service("skuInfoService")
@@ -39,6 +45,8 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
     private SkuSaleAttrValueService skuSaleAttrValueService;
     @Autowired
     ThreadPoolExecutor executor;
+    @Autowired
+    SeckillFeignService seckillFeignService;
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         QueryWrapper<SkuInfoEntity> wrapper = new QueryWrapper<>();
@@ -125,10 +133,20 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
             List<SkuImagesEntity> images = skuImagesService.getImagesBySkuId(skuId);
             skuItemVo.setImages(images);
         }, executor);
+        //3.查询当前商品是否参与了秒杀优惠
+        CompletableFuture<Void> secKillFuture = CompletableFuture.runAsync(() ->
+        {
+            R r = seckillFeignService.getSkuSeckillInfo(skuId);
+            if (r.getCode() == 0) {
+                SeckillSkuRedisTo data = r.getData(new TypeReference<SeckillSkuRedisTo>() {
+                });
+                skuItemVo.setSeckillInfo(data);
+            }
+        }, executor);
 
         //等待所有任务完成
         try {
-            CompletableFuture.allOf(infoFuture,baseAttrFuture,imgFuture,descFuture,saleAttrFuture)
+            CompletableFuture.allOf(infoFuture,baseAttrFuture,imgFuture,descFuture,saleAttrFuture,secKillFuture)
                     .get();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -158,9 +176,19 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
         return map;
     }
 
+    @Override
+    public List<SkuInfoEntity> getSkuInfoByPromotionId(List<SeckillSkuVo> vo) {
+        List<SkuInfoEntity> collect = vo.stream().map(e ->
+        {
+            SkuInfoEntity byId = this.getById(e.getSkuId());
+            return byId;
+        }).collect(Collectors.toList());
+        return collect;
+    }
+
 
 //    @Override
-//    public List<SkuItemVo.SkuItemSaleAttrVo> getSaleAttrsBySpuId(Long spuId) {
+//    public List<SkuItemVo.SkuItemSaleAttrVo> (Long spuId) {
 //        List<SkuInfoEntity> skusBySpuId = this.getSkusBySpuId(spuId);
 //        List<Long> skuIds = skusBySpuId.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
 //        List<SkuSaleAttrValueEntity> skuSaleAttrValueEntities =skuSaleAttrValueService.listByIds(skuIds);

@@ -4,6 +4,7 @@ import com.yang.common.utils.PageUtils;
 import com.yang.common.utils.R;
 import com.yang.gulimall.product.entity.SkuInfoEntity;
 import com.yang.gulimall.product.service.SkuInfoService;
+import com.yang.gulimall.product.vo.SeckillSkuVo;
 import com.yang.to.SkuInfoEntityTo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,12 @@ public class SkuInfoController {
     @Autowired
     private SkuInfoService skuInfoService;
 
-
+    @PostMapping("/seckill/getSkuInfo/promotionId")
+    public R seckillGetSkuInfoByPromotionId(@RequestBody List<SeckillSkuVo> vo)
+    {
+        List<SkuInfoEntity> skuInfoByPromotionId = skuInfoService.getSkuInfoByPromotionId(vo);
+        return R.ok().setData(skuInfoByPromotionId);
+    }
     @PostMapping("/product/skuinfo/newPrice")
     public Map<Long,BigDecimal> getNewPrice(@RequestBody List<Long> skuIds)
     {

@@ -3,6 +3,7 @@ package com.yang.gulimall.product.vo;
 import com.yang.gulimall.product.entity.SkuImagesEntity;
 import com.yang.gulimall.product.entity.SkuInfoEntity;
 import com.yang.gulimall.product.entity.SpuInfoDescEntity;
+import com.yang.gulimall.product.to.SeckillSkuRedisTo;
 import lombok.Data;
 
 import java.util.List;
@@ -19,6 +20,8 @@ public class SkuItemVo {
      SpuInfoDescEntity desp;
     //5.获取spu的规格参数信息
      List<SpuItemAttrGroupVo> groupAttrs;
+     //6.当前商品的秒杀优惠信息
+    private SeckillSkuRedisTo seckillInfo;
     boolean hasStock=true;
     @Data
     public static class SkuItemSaleAttrVo{

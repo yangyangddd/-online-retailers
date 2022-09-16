@@ -12,7 +12,6 @@ spring:
     port: 6379
   session:
     store-type: redis
-
 server:
   port: 8008
   servlet:
